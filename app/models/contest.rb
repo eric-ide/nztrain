@@ -72,7 +72,7 @@ class Contest < ActiveRecord::Base
   end
 
   def scoreboard
-    scoreboard = self.contestant_records.select([:score, :time_taken, :user_id]).order("contest_relations.score DESC, time_taken").includes(:user)
+    scoreboard = self.contestant_records.select([:score, :time_taken, :user_id, :school_year]).order("contest_relations.score DESC, time_taken").includes(:user)
     problem_set.problems.each do |problem| # for each problem, query problem score as well
       scoreboard = scoreboard.select("scores_#{problem.id}.score AS score_#{problem.id}, scores_#{problem.id}.attempt AS attempt_#{problem.id}, scores_#{problem.id}.attempts AS attempts_#{problem.id}, scores_#{problem.id}.submission_id AS sub_#{problem.id}").joins("LEFT OUTER JOIN contest_scores AS scores_#{problem.id} ON scores_#{problem.id}.contest_relation_id = contest_relations.id AND scores_#{problem.id}.problem_id = #{problem.id}")
     end
@@ -94,6 +94,11 @@ class Contest < ActiveRecord::Base
 
   def get_score(user_id)
     self.contest_relations.where(:user_id => user_id).first.try(:score)
+  end
+
+  def get_submissions(user_id, problem_id)
+    relation = self.contest_relations.where(:user_id => user_id).first
+    Submission.where(:user_id => user_id, :problem_id => problem_id, :created_at => relation.started_at..relation.finish_at)
   end
 
   def num_solved(problem)
