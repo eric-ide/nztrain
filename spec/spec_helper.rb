@@ -48,6 +48,13 @@ RSpec.configure do |config|
   #
   config.infer_spec_type_from_file_location!
 
+  # Explicitly enable old `should` syntax.
+  # See https://relishapp.com/rspec/rspec-expectations/docs/syntax-configuration.
+  # TODO: convert specs to new `expect` syntax
+  config.expect_with :rspec do |expectations|
+    expectations.syntax = [:should, :expect]
+  end
+
   config.before(:suite) do
     FixturesSpecHelper.initialize
   end
